@@ -7,6 +7,14 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
+        self.ram = [0] * 256
+        self.reg = [0] * 8
+        self.pc = 0
+
+    def ram_read(self, address):
+        pass
+
+    def ram_write(self, address):
         pass
 
     def load(self):
@@ -14,8 +22,11 @@ class CPU:
 
         address = 0
 
-        # For now, we've just hardcoded a program:
+        # LDI = 0b10000010
+        # EIGHT = 0b01000111
+        # HALT = 0b00000001
 
+        # For now, we've just hardcoded a program:
         program = [
             # From print8.ls8
             0b10000010, # LDI R0,8
@@ -62,4 +73,14 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        running = True
+
+        while running:
+            command = self.ram[self.pc]
+
+            # if command == LDI:
+            #     reg = self.ram_read(self.pc + 1)
+            #     reg = self.ram_read(self.pc + 2)
+            #     self.ram_write[reg] = num
+            #     print('sopmething')
+            #     self.pc += 3
