@@ -2,6 +2,13 @@
 
 import sys
 
+#OP CODES
+LDI = 0b10000010 #130 / This instruction sets a specified register to a specified value.
+PRN_REG = 0b01000111 #71 / Should print the value of a register
+EIGHT = 0b00001000 #8 / Should print the number 8
+HALT = 0b00000001 #1 / Halt the CPU (and exit the emulator).
+ADD = 0b10100000 #160 / Add the value in two registers and store the result in registerA.
+
 class CPU:
     """Main CPU class."""
 
@@ -18,32 +25,29 @@ class CPU:
 
     # should accept a value to write, and the address to write it to.
     def ram_write(self, address, value):
-        pass
-        # self.ram[address] = address
+        self.ram[address] = value
 
     def load(self):
         """Load a program into memory."""
         # pointer to iterate our program
         address = 0
 
-        LDI = 0b10000010
-        PRN_NUM = 0b01000111
-        EIGHT = 0b00001000
-        HALT = 0b00000001
-
         # For now, we've just hardcoded a program:
         program = [
             # From print8.ls8
+            EIGHT,
             LDI, # LDI R0,8
-            0b00000000,
-            EIGHT,
-            PRN_NUM, # PRN R0
-            1,
-            0b00000000,
-            PRN_NUM,
-            12,
-            EIGHT,
-            HALT, # HLT
+            65,
+            2,
+            LDI, # LDI R0,8
+            20,
+            3,
+            ADD,
+            2,
+            3,
+            PRN_REG,
+            2,
+            HALT # HLT
         ]
 
         for instruction in program:
@@ -83,28 +87,38 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pc = 0
         running = True
 
         while running:
-            command = self.ram[pc]
+            command = self.ram[self.pc]
 
-            if command == 130: # LDI
-                pass
-            elif command == 8: # Number 8
+            if command == LDI: # LDI
+                num = self.ram[self.pc + 1]
+                reg = self.ram[self.pc + 2]
+                self.reg[reg] = num
+                self.pc += 3
+
+            if command == ADD: # LDI
+                reg_a = self.ram[self.pc + 1]
+                reg_b = self.ram[self.pc + 2]
+                self.reg[reg_a] += self.reg[reg_b]
+                self.pc += 3
+
+            elif command == EIGHT: # Number 8
                 print(command) #8
 
-            elif command == 71: # PRN
-                num = self.ram[pc + 1]
-                print(num)
-                pc += 2
+            elif command == PRN_REG: # PRN
+                reg = self.ram[self.pc + 1]
+                print(self.ram[reg])
+                self.pc += 2
 
-            elif command == 1: # HALT
+            elif command == HALT: # HALT
                 running = False
             else:
                 print(f'Unknown instruction: {command}')
+                sys.exit(1)
 
-            pc += 1
+            self.pc += 1
 
 # if __name__=='__main__':
 #     cpu = CPU()
