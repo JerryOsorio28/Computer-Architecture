@@ -92,24 +92,45 @@ class CPU:
         while running:
             command = self.ram[self.pc]
 
+        #     program = [
+        #     # From print8.ls8
+        #     EIGHT,
+        #     LDI, # LDI R0,8
+        #     65,
+        #     2,
+        #     LDI, # LDI R0,8
+        #     20,
+        #     3,
+        #     ADD,
+        #     2,
+        #     3,
+        #     PRN_REG,
+        #     2,
+        #     HALT # HLT
+        # ]
+            # print('pc', self.pc)
+            # print('reg', self.reg)
+            
+
             if command == LDI: # LDI
                 num = self.ram[self.pc + 1]
                 reg = self.ram[self.pc + 2]
                 self.reg[reg] = num
                 self.pc += 3
 
-            if command == ADD: # LDI
+            elif command == ADD: # ADD
                 reg_a = self.ram[self.pc + 1]
                 reg_b = self.ram[self.pc + 2]
                 self.reg[reg_a] += self.reg[reg_b]
                 self.pc += 3
 
             elif command == EIGHT: # Number 8
-                print(command) #8
+                print(command)
+                self.pc += 1
 
             elif command == PRN_REG: # PRN
                 reg = self.ram[self.pc + 1]
-                print(self.ram[reg])
+                print(self.reg[reg])
                 self.pc += 2
 
             elif command == HALT: # HALT
@@ -118,7 +139,6 @@ class CPU:
                 print(f'Unknown instruction: {command}')
                 sys.exit(1)
 
-            self.pc += 1
 
 # if __name__=='__main__':
 #     cpu = CPU()
