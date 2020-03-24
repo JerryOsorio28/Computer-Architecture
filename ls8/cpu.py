@@ -7,39 +7,49 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        self.ram = [0] * 256
-        self.reg = [0] * 8
-        self.pc = 0
+        self.ram = [0] * 256 #bytes of memory
+        self.reg = [0] * 8 #register
+        self.pc = 0 #program counter
 
+    #should accept the address to read and return the value stored there.
     def ram_read(self, address):
-        pass
+        # print(self.ram[address])
+        return self.ram[address]
 
-    def ram_write(self, address):
+    # should accept a value to write, and the address to write it to.
+    def ram_write(self, address, value):
         pass
+        # self.ram[address] = address
 
     def load(self):
         """Load a program into memory."""
-
+        # pointer to iterate our program
         address = 0
 
-        # LDI = 0b10000010
-        # EIGHT = 0b01000111
-        # HALT = 0b00000001
+        LDI = 0b10000010
+        PRN_NUM = 0b01000111
+        EIGHT = 0b00001000
+        HALT = 0b00000001
 
         # For now, we've just hardcoded a program:
         program = [
             # From print8.ls8
-            0b10000010, # LDI R0,8
+            LDI, # LDI R0,8
             0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
+            EIGHT,
+            PRN_NUM, # PRN R0
+            1,
             0b00000000,
-            0b00000001, # HLT
+            PRN_NUM,
+            12,
+            EIGHT,
+            HALT, # HLT
         ]
 
         for instruction in program:
             self.ram[address] = instruction
             address += 1
+    
 
 
     def alu(self, op, reg_a, reg_b):
@@ -73,14 +83,33 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
+        pc = 0
         running = True
 
         while running:
-            command = self.ram[self.pc]
+            command = self.ram[pc]
 
-            # if command == LDI:
-            #     reg = self.ram_read(self.pc + 1)
-            #     reg = self.ram_read(self.pc + 2)
-            #     self.ram_write[reg] = num
-            #     print('sopmething')
-            #     self.pc += 3
+            if command == 130: # LDI
+                pass
+            elif command == 8: # Number 8
+                print(command) #8
+
+            elif command == 71: # PRN
+                num = self.ram[pc + 1]
+                print(num)
+                pc += 2
+
+            elif command == 1: # HALT
+                running = False
+            else:
+                print(f'Unknown instruction: {command}')
+
+            pc += 1
+
+# if __name__=='__main__':
+#     cpu = CPU()
+#     cpu.load()
+#     cpu.run()
+    # print(cpu.ram)
+        
+            
