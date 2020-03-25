@@ -18,6 +18,34 @@ class CPU:
         self.ram = [0] * 256 #bytes of memory
         self.reg = [0] * 12 #register
         self.pc = 0 #program counter
+        self.branchtable = {}
+        self.branchtable[ADD] = self.add
+        self.branchtable[MUL] = self.mul
+        self.branchtable[LDI] = self.ldi
+        self.branchtable[PRN_REG] = self.prn_reg
+
+    def add(self):
+        reg_a = self.ram[self.pc + 1]
+        reg_b = self.ram[self.pc + 2]
+        self.reg[reg_a] += self.reg[reg_b]
+        self.pc += 3
+    
+    def mul(self):
+        reg_a = self.ram[self.pc + 1]
+        reg_b = self.ram[self.pc + 2]
+        self.reg[reg_a] *= self.reg[reg_b]
+        self.pc += 3
+    
+    def ldi(self):
+        num = self.ram[self.pc + 1]
+        reg = self.ram[self.pc + 2]
+        self.reg[num] = reg
+        self.pc += 3
+    
+    def prn_reg(self):
+        reg = self.ram[self.pc + 1]
+        print('reg', self.reg[reg])
+        self.pc += 2
 
     #should accept the address to read and return the value stored there.
     def ram_read(self, address):
@@ -128,42 +156,32 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        running = True
 
         print('pc', self.pc)
         print('ram', self.ram)
         print('reg', self.reg)
+        print('branchtable', self.branchtable)
 
+        running = True
         while running:
             command = self.ram[self.pc]
 
             if command == LDI: # LDI
-                num = self.ram[self.pc + 1] #0
-                reg = self.ram[self.pc + 2] # 8
-                self.reg[num] = reg
-                self.pc += 3
+                self.branchtable[LDI]()
 
             elif command == ADD: # ADD
-                reg_a = self.ram[self.pc + 1]
-                reg_b = self.ram[self.pc + 2]
-                self.reg[reg_a] += self.reg[reg_b]
-                self.pc += 3
+                self.branchtable[ADD]()
 
             elif command == MUL: # MUL
-                reg_a = self.ram[self.pc + 1]
-                reg_b = self.ram[self.pc + 2]
-                self.reg[reg_a] *= self.reg[reg_b]
-                self.pc += 3
+                self.branchtable[MUL]()
 
             elif command == EIGHT: # Number 8
-                print('command', command)
+                print(command)
                 self.pc += 1
 
             elif command == PRN_REG: # PRN
-                reg = self.ram[self.pc + 1]
-                print('reg', self.reg[reg])
-                self.pc += 2
-
+                self.branchtable[PRN_REG]()
+            
             elif command == HALT: # HALT
                 running = False
             else:
