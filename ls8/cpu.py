@@ -76,16 +76,16 @@ class CPU:
         #     HALT # HLT
         # ]
         # program = [
-        #   10000010, 
+        #   10000010, #LDI
         #   0, 
-        #   1000, 
-        #   10000010, 
+        #   1000, #8
+        #   10000010, #LDI
         #   1, 
-        #   1001, 
-        #   10100010, 
+        #   1001, #9
+        #   10100010, #MUL
         #   0, 
         #   1, 
-        #   1000111, 
+        #   1000111, #PRN
         #   0, 
         #   1
         # ]
@@ -140,7 +140,7 @@ class CPU:
             if command == LDI: # LDI
                 num = self.ram[self.pc + 1] #0
                 reg = self.ram[self.pc + 2] # 8
-                self.reg[reg] = num
+                self.reg[num] = reg
                 self.pc += 3
 
             elif command == ADD: # ADD
