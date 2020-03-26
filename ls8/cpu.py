@@ -9,6 +9,9 @@ EIGHT = 0b00001000 #8 / Should print the number 8
 HALT = 0b00000001 #1 / Halt the CPU (and exit the emulator).
 ADD = 0b10100000 #160 / Add the value in two registers and store the result in registerA.
 MUL = 0b10100010 #162 / Multiply the values in two registers together and store the result in registerA.
+PUSH = 0b01000101 #69 / Push the value in the given register on the stack.
+POP = 0b01000110 #17 / Pop the value from the top of the stack and store it in the PC.
+CALL = 0b01010000 #80 / Calls a subroutine (function) at the address stored in the register.
 
 class CPU:
     """Main CPU class."""
@@ -16,13 +19,43 @@ class CPU:
     def __init__(self):
         """Construct a new CPU."""
         self.ram = [0] * 256 #bytes of memory
-        self.reg = [0] * 12 #register
+        self.reg = [0] * 8 #register
         self.pc = 0 #program counter
-        self.branchtable = {}
-        self.branchtable[ADD] = self.add
-        self.branchtable[MUL] = self.mul
-        self.branchtable[LDI] = self.ldi
-        self.branchtable[PRN_REG] = self.prn_reg
+        self.running = True
+        self.sp = 7 #represents the eigth register
+        # branchtable that holds the functions according to their OP Codes.
+        self.branchtable = {
+            ADD: self.add,
+            MUL: self.mul,
+            LDI: self.ldi,
+            PRN_REG: self.prn_reg,
+            HALT: self.halt,
+            PUSH: self.push,
+            POP: self.pop,
+            # CALL: self.call
+        }
+
+    def push(self):
+        #  argument from our register
+        reg = self.ram[self.pc + 1] 
+        # copy the value in the give register
+        val = self.reg[reg]
+        # we decrement our stack pointer by 1 first
+        self.reg[self.sp] -= 1
+        # we set the value in our stack to be equal to the value given by our register
+        self.ram[self.reg[self.sp]] = val
+        self.pc += 2
+
+    def pop(self):
+        # value we are popping from the stack to the register
+        reg = self.ram[self.pc + 1]
+        # copy the value from the stack where the sp is pointing
+        val = self.ram[self.reg[self.sp]]
+        # we set the value in our register to be equal to the value given by our stack
+        self.reg[reg] = val
+        # then we increase our stack pointer by 1
+        self.reg[self.sp] += 1
+        self.pc += 2
 
     def add(self):
         reg_a = self.ram[self.pc + 1]
@@ -36,7 +69,7 @@ class CPU:
         self.reg[reg_a] *= self.reg[reg_b]
         self.pc += 3
     
-    def ldi(self):
+    def ldi(self):        
         num = self.ram[self.pc + 1]
         reg = self.ram[self.pc + 2]
         self.reg[num] = reg
@@ -46,6 +79,9 @@ class CPU:
         reg = self.ram[self.pc + 1]
         print('reg', self.reg[reg])
         self.pc += 2
+    
+    def halt(self):
+        self.running = False
 
     #should accept the address to read and return the value stored there.
     def ram_read(self, address):
@@ -86,45 +122,6 @@ class CPU:
             print('File not found')
             sys.exit(2)
 
-        # For now, we've just hardcoded a program:
-        # program = [
-        #     # From print8.ls8
-        #     EIGHT,
-        #     LDI, # LDI R0,8
-        #     65,
-        #     2,
-        #     LDI, # LDI R0,8
-        #     20,
-        #     3,
-        #     ADD,
-        #     2,
-        #     3,
-        #     PRN_REG,
-        #     2,
-        #     HALT # HLT
-        # ]
-        # program = [
-        #   10000010, #LDI
-        #   0, 
-        #   1000, #8
-        #   10000010, #LDI
-        #   1, 
-        #   1001, #9
-        #   10100010, #MUL
-        #   0, 
-        #   1, 
-        #   1000111, #PRN
-        #   0, 
-        #   1
-        # ]
-        
-
-        # for instruction in program:
-        #     self.ram[address] = instruction
-        #     address += 1
-    
-
-
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
@@ -157,42 +154,27 @@ class CPU:
     def run(self):
         """Run the CPU."""
 
-        print('pc', self.pc)
         print('ram', self.ram)
         print('reg', self.reg)
         print('branchtable', self.branchtable)
 
-        running = True
-        while running:
+        # as long as the interpreter is running...
+        while self.running:
+            # iterates our ram array by index
             command = self.ram[self.pc]
-
-            if command == LDI: # LDI
-                self.branchtable[LDI]()
-
-            elif command == ADD: # ADD
-                self.branchtable[ADD]()
-
-            elif command == MUL: # MUL
-                self.branchtable[MUL]()
-
-            elif command == EIGHT: # Number 8
-                print(command)
-                self.pc += 1
-
-            elif command == PRN_REG: # PRN
-                self.branchtable[PRN_REG]()
-            
-            elif command == HALT: # HALT
-                running = False
+            # checks if the command exists in our branchtable
+            if command in self.branchtable.keys(): # LDI
+                    # if it does, it runs the function associated with the opcode
+                    self.branchtable[command]()
             else:
                 print(f'Unknown instruction: {command}')
                 sys.exit(1)
 
 
-# if __name__=='__main__':
-#     cpu = CPU()
+if __name__=='__main__':
+    cpu = CPU()
 #     cpu.load()
 #     cpu.run()
-    # print(cpu.ram)
+    print('branchtable', cpu.branchtable)
         
             
