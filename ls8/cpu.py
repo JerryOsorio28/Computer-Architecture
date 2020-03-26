@@ -10,8 +10,9 @@ HALT = 0b00000001 #1 / Halt the CPU (and exit the emulator).
 ADD = 0b10100000 #160 / Add the value in two registers and store the result in registerA.
 MUL = 0b10100010 #162 / Multiply the values in two registers together and store the result in registerA.
 PUSH = 0b01000101 #69 / Push the value in the given register on the stack.
-POP = 0b01000110 #17 / Pop the value from the top of the stack and store it in the PC.
+POP = 0b01000110 #70 / Pop the value from the top of the stack and store it in the PC.
 CALL = 0b01010000 #80 / Calls a subroutine (function) at the address stored in the register.
+RET = 0b00010001 #17 / Return from subroutine, Pop the value from the top of the stack and store it in the PC.
 
 class CPU:
     """Main CPU class."""
@@ -32,7 +33,8 @@ class CPU:
             HALT: self.halt,
             PUSH: self.push,
             POP: self.pop,
-            # CALL: self.call
+            CALL: self.call,
+            RET: self.ret
         }
 
     def push(self):
@@ -82,6 +84,22 @@ class CPU:
     
     def halt(self):
         self.running = False
+    
+    def call(self):
+        # The address of the instruction directly after CALL is pushed onto the stack. 
+        # This allows us to return to where we left off when the subroutine finishes executing.
+        self.reg[self.sp] -= 1
+        self.ram[self.reg[self.sp]] = self.pc + 2
+
+        # The PC is set to the address stored in the given register. 
+        # We jump to that location in RAM and execute the first instruction in the subroutine. 
+        # The PC can move forward or backwards from its current location.
+        reg = self.ram[self.pc + 1]
+        self.pc = self.reg[reg]
+
+    def ret(self):
+        self.pc = self.ram[self.reg[self.sp]]
+        self.reg[self.sp] += 1
 
     #should accept the address to read and return the value stored there.
     def ram_read(self, address):
