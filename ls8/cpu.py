@@ -34,7 +34,7 @@ class CPU:
             PUSH: self.push,
             POP: self.pop,
             CALL: self.call,
-            RET: self.ret
+            RET: self.ret,
         }
 
     def push(self):
@@ -172,9 +172,9 @@ class CPU:
     def run(self):
         """Run the CPU."""
 
-        print('ram', self.ram)
-        print('reg', self.reg)
-        print('branchtable', self.branchtable)
+        # print('ram', self.ram)
+        # print('reg', self.reg)
+        # print('branchtable', self.branchtable)
 
         # as long as the interpreter is running...
         while self.running:
